@@ -1,6 +1,8 @@
 import torch
 import time
 import os
+
+import execution_context
 import folder_paths
 from diffusers.utils import load_image
 from diffusers import EulerDiscreteScheduler
@@ -56,11 +58,14 @@ class BaseModelLoader_local_Node_Zho:
         pass
 
     @classmethod
-    def INPUT_TYPES(cls):
+    def INPUT_TYPES(cls, context: execution_context.ExecutionContext):
         return {
             "required": {
-                "ckpt_name": (folder_paths.get_filename_list("checkpoints"), )
-            }
+                "ckpt_name": (folder_paths.get_filename_list(context, "checkpoints"), )
+            },
+            "hidden": {
+                "context": "EXECUTION_CONTEXT"
+            },
         }
 
     RETURN_TYPES = ("MODEL",)
@@ -68,12 +73,12 @@ class BaseModelLoader_local_Node_Zho:
     FUNCTION = "load_model"
     CATEGORY = "📷PhotoMaker"
   
-    def load_model(self, ckpt_name):
+    def load_model(self, ckpt_name, context: execution_context.ExecutionContext):
         # Code to load the base model
         if not ckpt_name:
             raise ValueError("Please provide the ckpt_name parameter with the name of the checkpoint file.")
 
-        ckpt_path = folder_paths.get_full_path("checkpoints", ckpt_name)
+        ckpt_path = folder_paths.get_full_path(context, "checkpoints", ckpt_name)
             
         if not os.path.exists(ckpt_path):
             raise FileNotFoundError(f"Checkpoint file {ckpt_path} not found.")
@@ -164,21 +169,24 @@ class LoRALoader_Node_Zho:
         pass
 
     @classmethod
-    def INPUT_TYPES(cls):
+    def INPUT_TYPES(cls, context: execution_context.ExecutionContext):
         return {
             "required": {
-                "lora_name": (folder_paths.get_filename_list("loras"), ),
+                "lora_name": (folder_paths.get_filename_list(context, "loras"), ),
                 "lora_weight": ("FLOAT", {"default": 0.5, "min": 0, "max": 1.0, "display": "slider"}),
                 "pipe": ("MODEL",)
-            }
+            },
+            "hidden": {
+                "context": "EXECUTION_CONTEXT"
+            },
         }
             
     RETURN_TYPES = ("MODEL",)
     FUNCTION = "load_lora"
     CATEGORY = "📷PhotoMaker"
               
-    def load_lora(self, lora_name, lora_weight, pipe):
-        lora_path = folder_paths.get_full_path("loras", lora_name)
+    def load_lora(self, lora_name, lora_weight, pipe, context: execution_context.ExecutionContext):
+        lora_path = folder_paths.get_full_path(context, "loras", lora_name)
         lora_name_processed = os.path.basename(lora_path).replace(".safetensors", "")
             
         # 解融合之前的 LoRA
