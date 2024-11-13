@@ -72,7 +72,12 @@ class BaseModelLoader_local_Node_Zho:
     RETURN_NAMES = ("pipe",)
     FUNCTION = "load_model"
     CATEGORY = "📷PhotoMaker"
-  
+
+    @classmethod
+    def VALIDATE_INPUTS(cls, ckpt_name, context: execution_context.ExecutionContext):
+        context.validate_model("checkpoints", ckpt_name)
+        return True
+
     def load_model(self, ckpt_name, context: execution_context.ExecutionContext):
         # Code to load the base model
         if not ckpt_name:
@@ -184,7 +189,12 @@ class LoRALoader_Node_Zho:
     RETURN_TYPES = ("MODEL",)
     FUNCTION = "load_lora"
     CATEGORY = "📷PhotoMaker"
-              
+
+    @classmethod
+    def VALIDATE_INPUTS(cls, lora_name, lora_weight, pipe, context: execution_context.ExecutionContext):
+        context.validate_model("loras", lora_name)
+        return True
+
     def load_lora(self, lora_name, lora_weight, pipe, context: execution_context.ExecutionContext):
         lora_path = folder_paths.get_full_path(context, "loras", lora_name)
         lora_name_processed = os.path.basename(lora_path).replace(".safetensors", "")
